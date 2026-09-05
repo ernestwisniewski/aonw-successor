@@ -235,31 +235,38 @@ void textMapperTests() {
   );
 }
 
-AonwCombatExecution _statusCombat(String attacker, {AonwCoordinate? retreat}) =>
-    AonwCombatExecution(
-      seed: 0,
-      rolls: const [],
-      preview: AonwCombatPreview(
-        attackerUnitId: attacker,
-        target: const AonwUnitCombatTarget(unitId: 'unit'),
-        distance: 1,
-        attacker: _statusStats,
-        defender: _statusStats,
-        outgoingDamageMin: 1,
-        outgoingDamageMax: 1,
-        retaliationDamageMin: 0,
-        retaliationDamageMax: 0,
-      ),
-      outcome: AonwCombatOutcome(
-        attackerHitPoints: 10,
-        defenderHitPoints: retreat == null ? 0 : 1,
-        attackerKilled: false,
-        defenderKilled: retreat == null,
-        defenderRetreat: retreat,
-        outgoingDamage: 1,
-        retaliationDamage: 0,
-      ),
-    );
+AonwCombatExecution _statusCombat(
+  String attacker, {
+  AonwCoordinate? retreat,
+  AonwCombatTarget target = const AonwUnitCombatTarget(unitId: 'unit'),
+  bool retaliated = false,
+}) => AonwCombatExecution(
+  seed: 0,
+  rolls: [
+    const AonwCombatRoll(value: 0),
+    if (retaliated) const AonwCombatRoll(value: 0),
+  ],
+  preview: AonwCombatPreview(
+    attackerUnitId: attacker,
+    target: target,
+    distance: 1,
+    attacker: _statusStats,
+    defender: _statusStats,
+    outgoingDamageMin: 1,
+    outgoingDamageMax: 1,
+    retaliationDamageMin: 0,
+    retaliationDamageMax: 0,
+  ),
+  outcome: AonwCombatOutcome(
+    attackerHitPoints: 10,
+    defenderHitPoints: retaliated || retreat != null ? 1 : 0,
+    attackerKilled: false,
+    defenderKilled: !retaliated && retreat == null,
+    defenderRetreat: retreat,
+    outgoingDamage: 1,
+    retaliationDamage: 0,
+  ),
+);
 
 const _statusStats = AonwCombatStats(
   attack: 1,

@@ -42,7 +42,15 @@ final class AonwCombatExecution {
   }
 
   final int seed;
+
+  /// The outgoing roll, followed by a retaliation roll when it was performed.
   final List<AonwCombatRoll> rolls;
+
+  bool get defenderRetaliated => switch (rolls.length) {
+    1 => false,
+    2 => true,
+    _ => throw const FormatException('Invalid combat roll count.'),
+  };
   final AonwCombatPreview preview;
   final AonwCombatOutcome outcome;
 }

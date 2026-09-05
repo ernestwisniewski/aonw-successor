@@ -50,7 +50,9 @@ List<FlameCombatTransition> observedFlameCombats(
         retaliationDamage: combat.retaliationDamage,
         attackerKilled: combat.attackerKilled,
         defenderKilled: combat.defenderKilled,
-        defenderIsCity: combat.defenderIsCity,
+        attackerUnitId: combat.attackerUnitId,
+        defenderUnitId: combat.defenderUnitId,
+        defenderRetaliated: combat.defenderRetaliated,
         eventIndex: combat.eventIndex,
       ),
 ];

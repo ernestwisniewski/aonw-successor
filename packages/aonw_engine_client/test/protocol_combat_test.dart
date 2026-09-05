@@ -74,6 +74,20 @@ void main() {
     expect(combat.preview.attacker.modifiers.single.delta, 1);
   });
 
+  test('execution distinguishes retaliation from its damage value', () {
+    for (final count in [1, 2]) {
+      final execution = _execution(count);
+      expect(execution.outcome.retaliationDamage, 0);
+      expect(execution.defenderRetaliated, count == 2);
+    }
+  });
+
+  test('ambiguous combat roll counts cannot drive presentation', () {
+    for (final count in [0, 3]) {
+      expect(() => _execution(count).defenderRetaliated, throwsFormatException);
+    }
+  });
+
   test('combat preview rejects unknown or incomplete wire variants', () {
     final unknownTarget = Map<String, Object?>.from(_preview)
       ..['target'] = {'type': 'army', 'unitId': 'defender'};
@@ -128,3 +142,21 @@ const _preview = <String, Object?>{
   'retaliationDamageMin': 1,
   'retaliationDamageMax': 3,
 };
+
+AonwCombatExecution _execution(int rollCount) => AonwCombatExecution(
+  seed: 0,
+  rolls: [
+    for (var index = 0; index < rollCount; index++)
+      const AonwCombatRoll(value: 0),
+  ],
+  preview: AonwCombatPreview.fromJson(_preview),
+  outcome: const AonwCombatOutcome(
+    attackerHitPoints: 10,
+    defenderHitPoints: 10,
+    attackerKilled: false,
+    defenderKilled: false,
+    defenderRetreat: null,
+    outgoingDamage: 0,
+    retaliationDamage: 0,
+  ),
+);

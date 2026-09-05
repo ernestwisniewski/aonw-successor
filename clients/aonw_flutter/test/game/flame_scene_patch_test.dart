@@ -133,6 +133,9 @@ void main() {
     expect(patch.combats, hasLength(1));
     expect(patch.combats.single.attacker, unit.coordinate);
     expect(patch.combats.single.defender, (col: 1, row: 0));
+    expect(patch.combats.single.attackerUnitId, unit.id);
+    expect(patch.combats.single.defenderUnitId, 'defender');
+    expect(patch.combats.single.defenderRetaliated, isTrue);
     expect(patch.combats.single.revision, 1);
     expect(patch.combats.single.eventCount, 3);
     expect(patch.combats.single.outgoingDamage, 4);

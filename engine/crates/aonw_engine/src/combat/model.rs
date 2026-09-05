@@ -181,7 +181,7 @@ pub struct CombatOutcome {
 pub struct CombatExecution {
     /// Initial deterministic seed.
     pub seed: u32,
-    /// Rolls in consumption order.
+    /// Outgoing roll, followed by a retaliation roll when it was performed.
     pub rolls: Box<[CombatRoll]>,
     /// Shared preview inputs used by resolution.
     pub preview: CombatPreview,

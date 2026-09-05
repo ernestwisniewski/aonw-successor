@@ -62,6 +62,11 @@ fn surviving_units_gain_separate_typed_experience_events() {
         })
         .collect::<Vec<_>>();
     assert_eq!(subjects, [&attacker_id, &defender_id]);
+    let Some(ExecutionEvidence::Combat(execution)) = transition.evidence() else {
+        panic!("combat evidence")
+    };
+    assert_eq!(execution.rolls.len(), 2);
+    assert!(execution.outcome.retaliation_damage > 0);
 }
 
 #[test]

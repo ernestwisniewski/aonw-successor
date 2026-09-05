@@ -28,7 +28,9 @@ final class MapCommandCombatView extends MapCommandAnimationView {
     required this.retaliationDamage,
     required this.attackerKilled,
     required this.defenderKilled,
-    required this.defenderIsCity,
+    required this.attackerUnitId,
+    required this.defenderUnitId,
+    required this.defenderRetaliated,
   });
 
   final MapHexCoordinate attacker;
@@ -37,5 +39,8 @@ final class MapCommandCombatView extends MapCommandAnimationView {
   final int retaliationDamage;
   final bool attackerKilled;
   final bool defenderKilled;
-  final bool defenderIsCity;
+  final String attackerUnitId;
+  final String? defenderUnitId;
+  final bool defenderRetaliated;
+  bool get defenderIsCity => defenderUnitId == null;
 }

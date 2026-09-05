@@ -54,6 +54,7 @@ final class CombatViewMapper {
     }
     return (
       execution: CombatExecutionView(
+        defenderRetaliated: evidence.execution.defenderRetaliated,
         revision: wire.stamp.revision,
         preview: executionPreview,
         outcome: _outcome(evidence.execution.outcome, map),

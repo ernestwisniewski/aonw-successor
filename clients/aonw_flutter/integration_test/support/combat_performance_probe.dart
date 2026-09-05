@@ -130,6 +130,7 @@ MapRenderSnapshot _combatSnapshot(MapRenderSnapshot source, int index) {
         attackerUnitId: attacker.id,
         defenderCoordinate: city.center,
         lastExecution: CombatExecutionView(
+          defenderRetaliated: true,
           revision: revision,
           preview: CombatPreviewView(
             stamp: stamp,

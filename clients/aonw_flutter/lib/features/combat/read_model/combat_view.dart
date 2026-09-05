@@ -127,6 +127,7 @@ final class CombatOutcomeView {
 
 final class CombatExecutionView {
   CombatExecutionView({
+    required this.defenderRetaliated,
     required this.revision,
     required this.preview,
     required this.outcome,
@@ -137,6 +138,7 @@ final class CombatExecutionView {
   final CombatPreviewView preview;
   final CombatOutcomeView outcome;
   final List<CombatEventKindView> events;
+  final bool defenderRetaliated;
 }
 
 enum CombatRejectionCodeView {

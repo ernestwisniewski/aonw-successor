@@ -43,6 +43,7 @@ void main() {
       CombatEventKindView.unitKilled,
     ]);
     expect(mapped.execution?.outcome.defenderKilled, isTrue);
+    expect(mapped.execution?.defenderRetaliated, isFalse);
 
     expect(
       () => mapper.command(
@@ -57,6 +58,21 @@ void main() {
       ),
       throwsFormatException,
     );
+  });
+
+  test('maps the executed retaliation even when it deals no damage', () {
+    final mapped = mapper.command(
+      _accepted(_wirePreview(), retaliated: true),
+      map: testMapScene().map,
+      attack: CombatAttackView(
+        preview: _mappedPreview(),
+        cityConquestAction: CityConquestActionView.capture,
+      ),
+      expectedRevision: 0,
+      currentRevision: 0,
+    );
+    expect(mapped.execution!.outcome.retaliationDamage, 0);
+    expect(mapped.execution!.defenderRetaliated, isTrue);
   });
 
   test('fails closed for stale identity and unrelated rejection', () {
@@ -131,7 +147,10 @@ AonwCombatPreview _wirePreview({int outgoingDamageMax = 5}) =>
       retaliationDamageMax: 3,
     );
 
-AonwCommandResult _accepted(AonwCombatPreview preview) => AonwCommandResult(
+AonwCommandResult _accepted(
+  AonwCombatPreview preview, {
+  bool retaliated = false,
+}) => AonwCommandResult(
   stamp: _stamp(revision: 1),
   outcome: const AonwCommandAccepted(),
   events: const [
@@ -142,16 +161,19 @@ AonwCommandResult _accepted(AonwCombatPreview preview) => AonwCommandResult(
   evidence: AonwCombatEvidence(
     execution: AonwCombatExecution(
       seed: 7,
-      rolls: const [AonwCombatRoll(value: 3)],
+      rolls: [
+        const AonwCombatRoll(value: 3),
+        if (retaliated) const AonwCombatRoll(value: 0),
+      ],
       preview: preview,
-      outcome: const AonwCombatOutcome(
-        attackerHitPoints: 9,
-        defenderHitPoints: 0,
+      outcome: AonwCombatOutcome(
+        attackerHitPoints: 10,
+        defenderHitPoints: retaliated ? 2 : 0,
         attackerKilled: false,
-        defenderKilled: true,
+        defenderKilled: !retaliated,
         defenderRetreat: null,
         outgoingDamage: 4,
-        retaliationDamage: 1,
+        retaliationDamage: 0,
       ),
     ),
   ),

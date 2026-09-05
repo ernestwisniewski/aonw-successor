@@ -15,7 +15,9 @@ final class FlameCombatTransition extends FlameCommandTransition {
     required this.retaliationDamage,
     required this.attackerKilled,
     required this.defenderKilled,
-    required this.defenderIsCity,
+    required this.attackerUnitId,
+    required this.defenderUnitId,
+    required this.defenderRetaliated,
     super.eventIndex,
   });
 
@@ -27,7 +29,10 @@ final class FlameCombatTransition extends FlameCommandTransition {
   final int retaliationDamage;
   final bool attackerKilled;
   final bool defenderKilled;
-  final bool defenderIsCity;
+  final String attackerUnitId;
+  final String? defenderUnitId;
+  final bool defenderRetaliated;
+  bool get defenderIsCity => defenderUnitId == null;
 }
 
 final class FlameUnitMovementTransition extends FlameCommandTransition {

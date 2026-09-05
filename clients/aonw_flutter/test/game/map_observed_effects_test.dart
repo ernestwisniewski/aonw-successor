@@ -5,6 +5,7 @@ import 'package:aonw_flutter/features/map/read_model/map_command_frame_view.dart
 import 'package:aonw_flutter/features/map/read_model/player_map_view.dart';
 import 'package:aonw_flutter/game/aonw_flame_game.dart';
 import 'package:aonw_flutter/game/map/flame_map_camera.dart';
+import 'package:aonw_flutter/game/presentation/flame_scene_patch.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,6 +13,21 @@ import '../support/map_feedback_test_fixture.dart';
 import '../support/map_test_fixture.dart';
 
 void main() {
+  for (final city in [false, true]) {
+    test('observed combat carries participant identities (city: $city)', () {
+      final patch = FlameScenePatch.between(
+        _snapshot(),
+        _snapshot(revision: 1, animations: [_combat(3, city: city)]),
+      );
+      final combat = patch.combats.single;
+      expect(combat.attackerUnitId, 'unit');
+      expect(combat.defenderUnitId, city ? null : 'defender');
+      expect(combat.defenderIsCity, city);
+      expect(combat.defenderRetaliated, isTrue);
+      expect(combat.eventIndex, 3);
+    });
+  }
+
   testWithGame<AonwFlameGame>(
     'plays the executed route, combat and retreat in order',
     AonwFlameGame.new,
@@ -220,16 +236,19 @@ List<MapCommandAnimationView> _sequence() => [
   ),
 ];
 
-MapCommandCombatView _combat(int index) => MapCommandCombatView(
-  eventIndex: index,
-  attacker: (col: 2, row: 0),
-  defender: (col: 2, row: 1),
-  outgoingDamage: 3,
-  retaliationDamage: 1,
-  attackerKilled: false,
-  defenderKilled: false,
-  defenderIsCity: false,
-);
+MapCommandCombatView _combat(int index, {bool city = false}) =>
+    MapCommandCombatView(
+      eventIndex: index,
+      attacker: (col: 2, row: 0),
+      defender: (col: 2, row: 1),
+      outgoingDamage: 3,
+      retaliationDamage: 1,
+      attackerKilled: false,
+      defenderKilled: false,
+      attackerUnitId: 'unit',
+      defenderUnitId: city ? null : 'defender',
+      defenderRetaliated: true,
+    );
 
 MapRenderSnapshot _snapshot({
   int revision = 0,

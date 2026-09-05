@@ -106,7 +106,7 @@
     "flutter_client_test": {
       "files": {
         "clients/aonw_flutter/test/features/map/application/map_coordinator_test.dart": 598,
-        "clients/aonw_flutter/test/support/map_test_fixture.dart": 806
+        "clients/aonw_flutter/test/support/map_test_fixture.dart": 753
       },
       "declarations": {
         "clients/aonw_flutter/test/support/map_test_fixture.dart::class:FakeGameSession": 495

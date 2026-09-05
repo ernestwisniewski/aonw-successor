@@ -1,12 +1,55 @@
 part of 'map_feedback_mapper_test.dart';
 
 void animationMapperTests() {
+  test('keeps a city target separate from units stacked on its hex', () {
+    final previous = testMapScene(
+      units: [
+        testVisibleUnit(id: 'attacker'),
+        testVisibleUnit(id: 'garrison', coordinate: (col: 1, row: 0)),
+      ],
+    );
+    final snapshot = _snapshot();
+    const target = AonwCityCombatTarget(cityId: 'city');
+    final command = _command(
+      snapshot,
+      [
+        const AonwCombatResolvedEvent(
+          attackerUnitId: 'attacker',
+          target: target,
+        ),
+      ],
+      evidence: AonwCombatEvidence(
+        execution: _statusCombat('attacker', target: target, retaliated: true),
+      ),
+    );
+    final next = const PlayerMapViewMapper().fromWire(
+      snapshot,
+      map: previous.map,
+      actorPlayerId: previous.player.actorPlayerId,
+    );
+    final combat =
+        mapCommandAnimations(
+              command: command,
+              previous: previous.player,
+              next: next,
+              map: previous.map,
+            ).single
+            as MapCommandCombatView;
+    expect(combat.attackerUnitId, 'attacker');
+    expect(combat.defenderUnitId, isNull);
+    expect(combat.defenderIsCity, isTrue);
+    expect(combat.defender, (col: 1, row: 0));
+    expect(combat.retaliationDamage, 0);
+    expect(combat.defenderRetaliated, isTrue);
+  });
+
   test(
     'orders executed routes, combat and retreat at their event coordinates',
     () {
       final previous = testMapScene(
         units: [
           testVisibleUnit(id: 'first'),
+          testVisibleUnit(id: 'stacked', coordinate: (col: 1, row: 1)),
           testVisibleUnit(id: 'unit', coordinate: (col: 2, row: 1)),
         ],
       );
@@ -48,6 +91,9 @@ void animationMapperTests() {
       final combat = animations[1] as MapCommandCombatView;
       expect(combat.attacker, (col: 0, row: 0));
       expect(combat.defender, (col: 1, row: 1));
+      expect(combat.attackerUnitId, 'first');
+      expect(combat.defenderUnitId, 'unit');
+      expect(combat.defenderRetaliated, isFalse);
       expect(combat.outgoingDamage, 1);
       expect(combat.retaliationDamage, 0);
       expect(combat.defenderKilled, isFalse);

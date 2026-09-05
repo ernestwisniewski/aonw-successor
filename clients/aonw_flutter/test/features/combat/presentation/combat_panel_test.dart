@@ -58,6 +58,7 @@ void main() {
                 attackerUnitId: 'attacker',
                 defenderCoordinate: const (col: 1, row: 0),
                 lastExecution: CombatExecutionView(
+                  defenderRetaliated: true,
                   revision: 1,
                   preview: _preview(),
                   outcome: const CombatOutcomeView(

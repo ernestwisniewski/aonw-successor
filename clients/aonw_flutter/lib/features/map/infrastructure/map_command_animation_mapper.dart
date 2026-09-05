@@ -106,7 +106,12 @@ MapCommandCombatView? _combat(
     retaliationDamage: execution.outcome.retaliationDamage,
     attackerKilled: execution.outcome.attackerKilled,
     defenderKilled: execution.outcome.defenderKilled,
-    defenderIsCity: execution.preview.target is AonwCityCombatTarget,
+    attackerUnitId: execution.preview.attackerUnitId,
+    defenderUnitId: switch (execution.preview.target) {
+      AonwUnitCombatTarget(:final unitId) => unitId,
+      AonwCityCombatTarget() => null,
+    },
+    defenderRetaliated: execution.defenderRetaliated,
   );
 }
 

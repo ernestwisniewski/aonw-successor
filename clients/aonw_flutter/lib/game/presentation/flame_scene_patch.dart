@@ -290,8 +290,12 @@ final class FlameScenePatch {
         retaliationDamage: execution.outcome.retaliationDamage,
         attackerKilled: execution.outcome.attackerKilled,
         defenderKilled: execution.outcome.defenderKilled,
-        defenderIsCity:
-            execution.preview.target.kind == CombatTargetKindView.city,
+        attackerUnitId: attackerId,
+        defenderUnitId:
+            execution.preview.target.kind == CombatTargetKindView.unit
+            ? execution.preview.target.id
+            : null,
+        defenderRetaliated: execution.defenderRetaliated,
       ),
     ];
   }

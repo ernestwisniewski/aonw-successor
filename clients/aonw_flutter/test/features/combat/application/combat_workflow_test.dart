@@ -185,6 +185,7 @@ CombatPreviewView _preview({
 
 CombatExecutionView _execution(CombatPreviewView preview) =>
     CombatExecutionView(
+      defenderRetaliated: true,
       revision: 1,
       preview: preview,
       outcome: const CombatOutcomeView(
