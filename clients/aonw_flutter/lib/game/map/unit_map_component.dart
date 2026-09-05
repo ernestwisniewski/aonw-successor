@@ -49,6 +49,7 @@ final class MapUnitComponent extends PositionComponent
   bool get _canAnimateStationary =>
       isMounted &&
       !_moving &&
+      _combatOwner == null &&
       (_sprite.action == MapUnitSpriteAction.idle ||
           _sprite.action == MapUnitSpriteAction.work) &&
       _sprite.frame != null;
@@ -57,6 +58,9 @@ final class MapUnitComponent extends PositionComponent
     visualCenter - const ui.Offset(_diameter / 2, _diameter / 2),
   );
   var _moving = false;
+  var _presentationHolds = 0;
+  var _presentationDisposed = false;
+  Object? _combatOwner;
   MapHexCoordinate? _presentedCoordinate;
   bool get _onCity =>
       !_moving &&
@@ -136,8 +140,10 @@ final class MapUnitComponent extends PositionComponent
     _visual = visual;
     _sprite.setIdlePausesEnabled(!visual.selected);
     if (kindChanged) _sprite.setKind(unit.kind);
-    if (!preserveVisualPosition && !_moving) cancelMovement();
-    if (!_moving) _restoreStationaryPose();
+    if (!preserveVisualPosition && !_moving && _presentationHolds == 0) {
+      cancelMovement();
+    }
+    if (!_moving && _combatOwner == null) _restoreStationaryPose();
   }
 
   void setVisualCenter(ui.Offset center) {
@@ -145,6 +151,7 @@ final class MapUnitComponent extends PositionComponent
   }
 
   void beginMovement() {
+    _combatOwner = null;
     _moving = true;
     _sprite.playIdle();
     _onAnimationChanged();
@@ -190,7 +197,11 @@ final class MapUnitComponent extends PositionComponent
     _onAnimationChanged();
   }
 
-  void disposePresentation() => _sprite.dispose();
+  void disposePresentation() {
+    _presentationDisposed = true;
+    _combatOwner = null;
+    _sprite.dispose();
+  }
 
   @override
   void onRemove() {
@@ -201,6 +212,7 @@ final class MapUnitComponent extends PositionComponent
 
   @override
   void render(ui.Canvas canvas) {
+    if (_presentationDisposed) return;
     if (!mapCanvasClipBounds(canvas).overlaps(_visualBounds)) return;
     _paintCount++;
     const center = ui.Offset(_diameter / 2, _diameter / 2);

@@ -9,7 +9,7 @@ import '../../design_system/assets/sprite_frames.dart';
 import '../../features/map/read_model/player_map_view.dart';
 import 'map_sprite_catalog.dart';
 
-enum MapUnitSpriteAction { idle, walk, work }
+enum MapUnitSpriteAction { idle, walk, work, attack, die }
 
 /// Owns unit poses, direction and authored frame geometry.
 final class MapUnitSpriteAnimation {
@@ -56,6 +56,8 @@ final class MapUnitSpriteAnimation {
         MapUnitSpriteAction.idle => 0.9,
         MapUnitSpriteAction.walk => 0.14,
         MapUnitSpriteAction.work => 0.22,
+        MapUnitSpriteAction.attack => 0.13,
+        MapUnitSpriteAction.die => 0.18,
       });
 
   Future<void> load() async {
@@ -63,6 +65,8 @@ final class MapUnitSpriteAnimation {
       _loadAction(MapUnitSpriteAction.idle),
       _loadAction(MapUnitSpriteAction.walk),
       if (_supportsWork) _loadAction(MapUnitSpriteAction.work),
+      if (!_supportsWork) _loadAction(MapUnitSpriteAction.attack),
+      _loadAction(MapUnitSpriteAction.die),
     ]);
   }
 
@@ -96,10 +100,25 @@ final class MapUnitSpriteAnimation {
     _ => false,
   };
 
+  void playAttack() => _play(
+    _supportsWork ? MapUnitSpriteAction.idle : MapUnitSpriteAction.attack,
+  );
+
+  void playAttackToward(ui.Offset from, ui.Offset to) {
+    _faceToward(from, to);
+    playAttack();
+  }
+
+  void playDie() => _play(MapUnitSpriteAction.die);
+
   void playWalkToward(ui.Offset from, ui.Offset to) {
+    _faceToward(from, to);
+    _play(MapUnitSpriteAction.walk);
+  }
+
+  void _faceToward(ui.Offset from, ui.Offset to) {
     final dx = to.dx - from.dx;
     if (dx.abs() > 0.001) _mirrored = dx < 0;
-    _play(MapUnitSpriteAction.walk);
   }
 
   void _play(MapUnitSpriteAction action) {
@@ -120,7 +139,12 @@ final class MapUnitSpriteAnimation {
     _elapsed += dt;
     final count = (_elapsed / frameDuration).floor();
     _elapsed -= count * frameDuration;
-    _index = (_index + count) % MapSpriteCatalog.unitFrameCount;
+    final next = _index + count;
+    _index =
+        _action == MapUnitSpriteAction.attack ||
+            _action == MapUnitSpriteAction.die
+        ? math.min(next, MapSpriteCatalog.unitFrameCount - 1)
+        : next % MapSpriteCatalog.unitFrameCount;
   }
 
   void _advanceIdle(double dt) {

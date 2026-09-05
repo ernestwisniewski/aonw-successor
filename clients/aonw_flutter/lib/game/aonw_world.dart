@@ -111,7 +111,7 @@ final class AonwWorld extends World implements FlameSceneSink {
     if (identical(_scene, snapshot)) return;
     _resetEffectsFor(snapshot);
     final patch = FlameScenePatch.between(_scene, snapshot);
-    if (patch.hasObservedCommand) effectHost.skipAll();
+    effectHost.preparePatch(patch);
     _scene = snapshot;
     _sceneWriteCount += 1;
     final identity = (
@@ -169,7 +169,7 @@ final class AonwWorld extends World implements FlameSceneSink {
     eventFeedbackLayer.applySnapshot(
       snapshot,
       cache,
-      deferCommandFeedback: patch.hasObservedCommand,
+      deferCommandFeedback: patch.hasOrderedEffects,
     );
     cityProductionLayer.applySnapshot(snapshot, cache);
     effectHost.applyPatch(patch, cache);

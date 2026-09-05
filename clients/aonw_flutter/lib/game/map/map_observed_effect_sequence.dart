@@ -5,7 +5,6 @@ extension _ObservedEffectSequence on MapEffectHostComponent {
     FlameScenePatch patch,
     MapStaticRenderCache cache,
   ) {
-    skipAll();
     _observedCache = cache;
     _observedRevision = patch.snapshot.player.stamp.revision;
     _observedSequenceActive = true;
@@ -27,11 +26,7 @@ extension _ObservedEffectSequence on MapEffectHostComponent {
         case final FlameUnitMovementTransition movement:
           _startMovement(movement, cache);
         case final FlameCombatTransition combat:
-          _availableCombatEffect()!.start(
-            combat,
-            cache,
-            reducedMotion: _staticCombat,
-          );
+          _startCombat(_availableCombatEffect()!, combat, cache);
       }
     }
     if (_observedTransitions.isEmpty && !_hasActiveVisualEffects) {
@@ -53,6 +48,7 @@ extension _ObservedEffectSequence on MapEffectHostComponent {
               _units.settledCenterFor(cache, movement.unitId, movement.to),
             );
         _completedMovementCount += 1;
+        _preparedMovements.remove(movement)?.release();
       }
     }
     _observedTransitions.clear();

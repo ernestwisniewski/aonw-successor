@@ -28,6 +28,7 @@ import 'support/map_event_performance_probe.dart';
 import 'support/map_floating_text_performance_probe.dart';
 import 'support/movement_camera_performance_probe.dart';
 import 'support/route_performance_probe.dart';
+import 'support/unit_combat_presentation_probe.dart';
 import 'support/unit_idle_presentation_probe.dart';
 import 'support/unit_work_presentation_probe.dart';
 
@@ -121,6 +122,13 @@ void main() {
       rssBefore: rssBefore,
     );
     await verifyUnitWorkPresentation(
+      binding,
+      tester,
+      game,
+      snapshot,
+      rssBefore: rssBefore,
+    );
+    await verifyUnitCombatPresentation(
       binding,
       tester,
       game,

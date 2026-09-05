@@ -11,6 +11,8 @@ import 'flame_observed_command.dart';
 
 export 'flame_command_transition.dart';
 
+part 'flame_combat_retreat.dart';
+
 /// The presentation-only delta between two validated map snapshots.
 ///
 /// Observed commands carry executed paths. A route preview is never promoted to
@@ -62,6 +64,7 @@ final class FlameScenePatch {
     final previousImprovements = _improvementsByCoordinate(previous);
     final nextImprovements = _improvementsByCoordinate(next);
     final previousRoads = _roadsByCoordinate(previous);
+    final combats = _combatBetween(previous, next, previousUnits, nextUnits);
     final nextRoads = _roadsByCoordinate(next);
 
     return FlameScenePatch._(
@@ -100,8 +103,11 @@ final class FlameScenePatch {
         for (final road in previous.player.roads)
           if (!nextRoads.containsKey(road.coordinate)) road.coordinate,
       ],
-      movements: _movementBetween(previous, next, previousUnits, nextUnits),
-      combats: _combatBetween(previous, next, previousUnits, nextUnits),
+      movements: [
+        ..._movementBetween(previous, next, previousUnits, nextUnits),
+        ..._combatRetreatBetween(previous, next, combats),
+      ],
+      combats: combats,
       hasObservedCommand: isFlameObservedAdvance(previous, next),
     );
   }
@@ -120,6 +126,8 @@ final class FlameScenePatch {
   final List<FlameUnitMovementTransition> movements;
   final List<FlameCombatTransition> combats;
   final bool hasObservedCommand;
+  bool get hasOrderedEffects =>
+      hasObservedCommand || (combats.isNotEmpty && movements.isNotEmpty);
 
   static FlameScenePatch _replacement(
     MapRenderSnapshot? previous,
@@ -282,6 +290,9 @@ final class FlameScenePatch {
     if (attacker == null) return const [];
     return [
       FlameCombatTransition(
+        eventIndex: execution.events.indexOf(
+          CombatEventKindView.combatResolved,
+        ),
         attacker: attacker.coordinate,
         defender: execution.preview.defenderCoordinate,
         revision: execution.revision,

@@ -44,6 +44,12 @@ Future<void> _compareKind(
       if (!walk) sprite.playIdle();
       await _compareFrames(sprite, adjustments, size);
     }
+    sprite.playAttackToward(ui.Offset.zero, ui.Offset(mirror ? -1 : 1, 0));
+    if (sprite.action == MapUnitSpriteAction.attack) {
+      await _compareFrames(sprite, adjustments, size);
+    }
+    sprite.playDie();
+    await _compareFrames(sprite, adjustments, size);
     sprite.playWork();
     if (sprite.action == MapUnitSpriteAction.work) {
       await _compareFrames(sprite, adjustments, size);

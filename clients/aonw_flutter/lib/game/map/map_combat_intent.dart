@@ -2,6 +2,8 @@ part of 'map_effect_host.dart';
 
 final class _ActiveCombatIntent {
   final feedback = MapCombatFeedback();
+  MapUnitCombatPresentation? markers;
+  int revision = -1;
   var active = false;
   var attackerCenter = ui.Offset.zero;
   var defenderCenter = ui.Offset.zero;
@@ -40,7 +42,10 @@ final class _ActiveCombatIntent {
     FlameCombatTransition combat,
     MapStaticRenderCache cache, {
     required bool reducedMotion,
+    MapUnitCombatPresentation? participants,
   }) {
+    markers = participants;
+    revision = combat.revision;
     active = true;
     attackerCenter = mapProjectedTopFaceCenter(cache, combat.attacker);
     defenderCenter = mapProjectedTopFaceCenter(cache, combat.defender);
@@ -61,15 +66,22 @@ final class _ActiveCombatIntent {
     );
     setReducedMotion(reducedMotion);
     elapsed = 0;
+    markers?.start(cache);
     _rebuildCurve();
   }
 
   void setReducedMotion(bool enabled) {
     reducedMotion = enabled;
-    if (enabled) feedback.clearParticles();
+    if (enabled) {
+      feedback.clearParticles();
+      markers?.complete();
+      markers = null;
+    }
   }
 
   void complete() {
+    markers?.complete();
+    markers = null;
     feedback.clear();
     active = false;
     elapsed = 0;

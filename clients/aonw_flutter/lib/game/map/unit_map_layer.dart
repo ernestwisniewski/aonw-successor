@@ -22,6 +22,7 @@ import 'unit_marker_details.dart';
 
 part 'unit_map_component.dart';
 part 'unit_map_animation.dart';
+part 'unit_map_presentation.dart';
 
 enum _CityUnitPlacement { none, primary, companion }
 
@@ -51,6 +52,7 @@ final class MapUnitLayerComponent extends Component with HasVisibility {
   }
 
   final _unitsById = <String, MapUnitComponent>{};
+  final _retainedUnits = <String, MapUnitComponent>{};
   final _visualOffsetsById = <String, ui.Offset>{};
   final _shadows = MapSpriteShadowCache();
   var _createdCount = 0;
@@ -90,7 +92,8 @@ final class MapUnitLayerComponent extends Component with HasVisibility {
   @visibleForTesting
   MapUnitComponent? debugComponentForUnit(String unitId) => _unitsById[unitId];
 
-  MapUnitComponent? componentForUnit(String unitId) => _unitsById[unitId];
+  MapUnitComponent? componentForUnit(String unitId) =>
+      _unitsById[unitId] ?? _retainedUnits[unitId];
 
   void applyPatch(FlameScenePatch patch, MapStaticRenderCache cache) {
     _frameClock.flush();
@@ -110,8 +113,12 @@ final class MapUnitLayerComponent extends Component with HasVisibility {
       final component = _unitsById.remove(unitId);
       _visualOffsetsById.remove(unitId);
       if (component != null) {
-        component.disposePresentation();
-        component.removeFromParent();
+        if (component._presentationHolds > 0) {
+          _retainedUnits[unitId] = component;
+        } else {
+          component.disposePresentation();
+          component.removeFromParent();
+        }
         _removedCount += 1;
       }
     }
@@ -140,7 +147,7 @@ final class MapUnitLayerComponent extends Component with HasVisibility {
       );
       _visualOffsetsById[unit.id] =
           visual.center - _center(cache, unit.coordinate);
-      final existing = _unitsById[unit.id];
+      final existing = _unitsById[unit.id] ?? _retainedUnits.remove(unit.id);
       if (existing == null) {
         final component = MapUnitComponent._(
           unit: unit,
@@ -153,6 +160,7 @@ final class MapUnitLayerComponent extends Component with HasVisibility {
         add(component);
         _createdCount += 1;
       } else {
+        _unitsById[unit.id] = existing;
         existing._applyUnit(
           unit,
           visual: visual,
@@ -161,12 +169,13 @@ final class MapUnitLayerComponent extends Component with HasVisibility {
         if (changedIds.contains(unit.id)) _updatedCount += 1;
       }
     }
-    isVisible = _unitsById.isNotEmpty;
+    _updatePresentationVisibility();
   }
 
   void clearLayer() {
-    final components = _unitsById.values.toList(growable: false);
+    final components = {..._unitsById.values, ..._retainedUnits.values};
     _unitsById.clear();
+    _retainedUnits.clear();
     _frameClock.clear();
     for (final component in components) {
       component.disposePresentation();
